@@ -6,3 +6,5 @@ ESP8266 based Controller (2 channel relay) for tower clock
 2nd relay controls daylight saving adjustment by switching off the clock power supply for 1/11 hours
 
 1 No GPS receiver (GY-NEO6MV2) supplies the current UTC time
+
+Some libraries are shared with the GoNtroller
