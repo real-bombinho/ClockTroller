@@ -78,6 +78,11 @@ bool Clock::isSpringForward(const int mday, const int mon, const int wday) {
 
 // end of Clock ////////////////////////////////////////////////////////////////////////////////////////////////
 
+// currTime uses minutes + hours * 60
+// from/till uses 1400 for 2pm etc
+// override allows to override by parameter
+// randomStart adds randomStartDelay to till
+
 bool isBetween(const int currTime, const uint16_t from, const uint16_t till, bool overRide, bool randomStart) {
   if (overRide) return true;
   uint8_t b = currTime / 60;
