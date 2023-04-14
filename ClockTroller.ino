@@ -212,11 +212,6 @@ void loop() {
   static int tc;
   tc = (timeinfo.tm_hour * 60) + timeinfo.tm_min;
 
-
-  // if ((now < lastGPSCheck) || (now > (lastGPSCheck + (10 * 60) ))) {
-  //   if (SyncWithGPS()) lastGPSCheck = now;
-  // }
-
 // Adjust for BST/GMT ///////////////////////////////////////////////
 
   Clock c;
@@ -256,10 +251,9 @@ void loop() {
     blink(LED_GREEN, 100, 1, 1);
     flashTime = 101;
   }
+  
   Serial.flush();
   extern os_timer_t *timer_list;
-//  os_timer_t* oldList;
-//  oldList = timer_list;
   timer_list = nullptr;
 
 // enable light sleep
@@ -282,7 +276,5 @@ void loop() {
 // timed light sleep is only entered when the sleep command is
 // followed by a delay() that is at least 1ms longer than the sleep
   delay(sleepTimeMilliSeconds + 1);
-
-//  timer_list = oldList;
   
 }
