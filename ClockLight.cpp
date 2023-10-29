@@ -65,19 +65,15 @@ int Sun::Set(const int mday, const int mon) {
 // end of Sun //////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool Clock::isFallBack(const int mday, const int mon, const int wday) {
-  return ((mon == 9) && (mday > 24) && (wday == 0));
+  return ((mon == 9) && (mday > 24) && (wday == 0)); // mon == 9 -> October
 }
 
 bool Clock::isSpringForward(const int mday, const int mon, const int wday) {
-  return ((mon == 2) && (mday > 24) && (wday == 0));
+  //Serial.printf("%i/%i weekday: %i\n", mday, mon + 1, wday);
+  return ((mon == 2) && (mday > 24) && (wday == 0)); // mon == 2 -> March
 }
 
 // end of Clock ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// currTime uses minutes + hours * 60
-// from/till uses 1400 for 2pm etc
-// override allows to override by parameter
-// randomStart adds randomStartDelay to till
 
 bool isBetween(const int currTime, const uint16_t from, const uint16_t till, bool overRide, bool randomStart) {
   if (overRide) return true;

@@ -1,3 +1,7 @@
+///////////////////////  W A R N I N G  //////////////////////////
+// 
+//  does not work with ESP8266 Community version 3.1.2
+
 #include <ESP8266WiFi.h>
 #include <TinyGPS.h>
 #include <time.h>
@@ -15,7 +19,8 @@
 #define RELAY_1   12 // PIN_D6
 #define RELAY_2   13 // PIN_D7
 
-//////////////////////////////////////////////////////////////
+/////////// Needs work at ModBusRelay ////////////////////////
+// settings doubled up in there
 
 #define RXPin     14 // PIN_D5  // Serial Receive pin (GPS) 
 #define TXPin      2 // PIN_D4  // Serial Transmit pin (GPS)
@@ -40,7 +45,7 @@ uint8_t volatile g_Status = sOK;
 
 float volatile sensorTemperature;
 
-const char * Version = "ver = 0.0.2<br>";
+const char * Version = "ver = 0.0.3<br>";
 
 TinyGPS gps;
 SoftwareSerial ss(RXPin, TXPin);  //communicate with GPS
@@ -50,7 +55,8 @@ uint32_t RTCmillis() {
   return (system_get_rtc_time() * (system_rtc_clock_cali_proc() >> 12)) / 1000;
 }
 
-void fpm_wakup_cb_func(void) {     // called after wakup from light sleep
+void fpm_wakeup_cb_func(void) {     // called after wakeup from light sleep
+  wifi_fpm_close();
   Serial.println("awoken from light sleep");
   Serial.flush();
 }
@@ -128,6 +134,7 @@ bool SyncWithGPS()
       Serial.println(age);
     }
   }
+  return (false);
 }
 
 void blink(uint8_t led, int onTime, int offTime, int repetitions) {
@@ -143,15 +150,15 @@ void blink(uint8_t led, int onTime, int offTime, int repetitions) {
 void setup() {
 //  pinMode(RXPin, INPUT ); // force it? Enable if continuous freezes occur
  
-  Serial.begin(19200);
+  Serial.begin(74880);
   ss.begin(9600);
-  Serial.println("Hello!");  
+  while (!Serial){};
+  Serial.println("Hello!"); 
+
+  WiFi.mode(WIFI_OFF); 
 
   pinMode(LED_RED, OUTPUT);      // LED pin as output.
   pinMode(LED_GREEN, OUTPUT);    // LED pin as output.
-  
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
   
   lastTimeFetched = time(nullptr);
   if (lastTimeFetched > 10000) {
@@ -178,7 +185,7 @@ void loop() {
 //    loopCounter = 0;
 //  }
 
-// get current time, every 24h update RTC from NTP, on failure retry after 1h
+// get current time
 
   struct tm timeinfo;
   now = time(nullptr);
@@ -201,6 +208,11 @@ void loop() {
   static int tc;
   tc = (timeinfo.tm_hour * 60) + timeinfo.tm_min;
 
+
+  // if ((now < lastGPSCheck) || (now > (lastGPSCheck + (10 * 60) ))) {
+  //   if (SyncWithGPS()) lastGPSCheck = now;
+  // }
+
 // Adjust for BST/GMT ///////////////////////////////////////////////
 
   Clock c;
@@ -220,9 +232,9 @@ void loop() {
   Sun sun;
 //  Serial.printf("Sunrise today is %i, sun set is %i\n", sun.Rise(timeinfo.tm_mday, timeinfo.tm_mon),
 //    sun.Set(timeinfo.tm_mday, timeinfo.tm_mon));
-  if (isBetween(tc, sun.Rise(timeinfo.tm_mday, timeinfo.tm_mon),
+  if ((relay1.getState() == LOW) && isBetween(tc, sun.Rise(timeinfo.tm_mday, timeinfo.tm_mon),
     sun.Set(timeinfo.tm_mday, timeinfo.tm_mon))) {
-      relay2.setState(LOW);  // switch on main load cylinder
+      relay2.setState(LOW);  // switch on light
     }
     else {
       relay2.setState(HIGH); // off
@@ -240,7 +252,6 @@ void loop() {
     blink(LED_GREEN, 100, 1, 1);
     flashTime = 101;
   }
-  
   Serial.flush();
   extern os_timer_t *timer_list;
   timer_list = nullptr;
@@ -251,19 +262,19 @@ void loop() {
   
   wifi_fpm_set_sleep_type(LIGHT_SLEEP_T);
   wifi_fpm_open();
-  wifi_fpm_set_wakeup_cb(fpm_wakup_cb_func);
-
-// optional: register one or more wake-up interrupts. the chip
-// will wake from whichever (timeout or interrupt) occurs earlier
-//  gpio_pin_wakeup_enable(D2, GPIO_PIN_INTR_HILEVEL);
+  wifi_fpm_set_wakeup_cb(fpm_wakeup_cb_func);
 
 // sleep for x seconds
-  long sleepTimeMilliSeconds = sleepTime * 1000 - flashTime + 700;
+  long sleepTimeMilliSeconds = sleepTime * 1000 - flashTime + 650;  //adjust last figure for higher precision
 // light sleep function requires microseconds
-  wifi_fpm_do_sleep(sleepTimeMilliSeconds * 1000);
+  int err = wifi_fpm_do_sleep(sleepTimeMilliSeconds * 1000);
 
 // timed light sleep is only entered when the sleep command is
 // followed by a delay() that is at least 1ms longer than the sleep
   delay(sleepTimeMilliSeconds + 1);
-  
+
+  if (err != 0) {
+    Serial.print("ERROR: ");
+    Serial.println(err);
+  }  
 }
