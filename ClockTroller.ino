@@ -1,4 +1,3 @@
-#include "Credentials.h"
 #include <ESP8266WiFi.h>
 #include <TinyGPS.h>
 #include <time.h>
@@ -8,12 +7,6 @@
 #include "GoN_Relay.h"
 #include "ClockLight.h"
 
-
-#ifndef STASSID
-  #define STASSID "YourSSID"
-  #define STAPSK  "YourPassword"
-#endif
-
 #ifndef GoN_LED_H
   #define LED_RED   5 // PIN_D1
   #define LED_GREEN 4 // PIN_D2
@@ -22,8 +15,7 @@
 #define RELAY_1   12 // PIN_D6
 #define RELAY_2   13 // PIN_D7
 
-/////////// Needs work at ModBusRelay ////////////////////////
-// settings doubled up in there
+//////////////////////////////////////////////////////////////
 
 #define RXPin     14 // PIN_D5  // Serial Receive pin (GPS) 
 #define TXPin      2 // PIN_D4  // Serial Transmit pin (GPS)
@@ -37,9 +29,6 @@
 
 Relay relay1(RELAY_1);
 Relay relay2(RELAY_2);
-
-const char *ssid = STASSID;
-const char *pass = STAPSK;
 
 //struct ScheduledTimes {
 time_t lastTimeFetched = 0;
