@@ -65,15 +65,11 @@ int Sun::Set(const int mday, const int mon) {
 // end of Sun //////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool Clock::isFallBack(const int mday, const int mon, const int wday) {
-  if ((mon != 10) || (mday < 25) || (wday != 0)) { 
-    return (false);  
-  }
+  return ((mon == 9) && (mday > 24) && (wday == 0));
 }
 
 bool Clock::isSpringForward(const int mday, const int mon, const int wday) {
-  if ((mon != 3) || (mday < 25) || (wday != 0)) { 
-    return (false);
-  }  
+  return ((mon == 2) && (mday > 24) && (wday == 0));
 }
 
 // end of Clock ////////////////////////////////////////////////////////////////////////////////////////////////
